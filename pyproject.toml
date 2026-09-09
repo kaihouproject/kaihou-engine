@@ -15,10 +15,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-[project.urls]
-Homepage = "https://github.com/houtarou/kaihou-engine"
-Repository = "https://github.com/houtarou/kaihou-engine"
-Documentation = "https://github.com/houtarou/kaihou-engine#readme"
 requires-python = ">=3.11"
 dependencies = [
     "click",
@@ -31,6 +27,11 @@ dependencies = [
     "torch",
     "sentence-transformers"
 ]
+
+[project.urls]
+Homepage = "https://github.com/houtarou/kaihou-engine"
+Repository = "https://github.com/houtarou/kaihou-engine"
+Documentation = "https://github.com/houtarou/kaihou-engine#readme"
 
 [project.optional-dependencies]
 dev = [
