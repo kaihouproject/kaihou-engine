@@ -76,6 +76,25 @@ source .venv/bin/activate
 
 The installer automatically initializes any submodules (none are required now) and installs the required spaCy language models (`en`, `fr`, `es`).
 
+
+
+If you prefer not to create a PyPI account, you can still obtain and install Kaihou Engine using these approaches:
+
+* **GitHub Releases** – The CI workflow builds wheels for each tag.  When a release (e.g., `v0.2.0`) is published, download the attached `.whl` file and install it locally:
+  ```bash
+  curl -L -o kaihou_engine-0.2.0-py3-none-any.whl \
+      https://github.com/kaihouproject/kaihou-engine/releases/download/v0.2.0/kaihou_engine-0.2.0-py3-none-any.whl
+  python -m pip install kaihou_engine-0.2.0-py3-none-any.whl
+  ```
+
+* **Direct install from the repository** – Pip can install the package straight from the GitHub URL without any PyPI involvement:
+  ```bash
+  python -m pip install git+https://github.com/kaihouproject/kaihou-engine.git@main#egg=kaihou-engine
+  ```
+
+Both methods work with the existing `install.sh` script, which does not depend on PyPI. After installation, activate the virtual environment (`source .venv/bin/activate`) and you are ready to use `kaihou` as described in the Quick‑Start section.
+
+
 ## Quick Start
 ```bash
 # Interactive menu
@@ -96,6 +115,16 @@ We welcome contributions. Open a pull request (forking is optional) and referenc
 - Style/tonality detection
 - Additional language pairs (e.g., ES, DE)
 - Plug‑in for remote LLM APIs
+
+## Acknowledgements
+
+The Kaihou Engine stands on the shoulders of many great open‑source projects and the broader Python community:
+
+- **[spaCy](https://spacy.io/)** – the NLP library that provides the linguistic backbone.
+- **[Rich](https://github.com/Textualize/rich)** – beautiful terminal rendering and colorised output.
+- **[Click](https://palletsprojects.com/p/click/)** – the CLI framework that powers our command line.
+- **[Python](https://www.python.org/)** – for its extensive ecosystem and thriving community.
+- And countless **contributors** who have helped improve Kaihou Engine.
 
 These items are tracked in the GitHub milestone **Future Features**.
 

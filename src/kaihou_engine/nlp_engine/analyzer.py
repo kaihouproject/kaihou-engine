@@ -9,7 +9,8 @@ produces a `SourceAnalysis` object that matches the schema in
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+import spacy
+
 
 
 
@@ -23,7 +24,7 @@ LANG_MODEL_MAP = {
     "de": "de_core_news_sm",
 }
 
-import spacy
+
 
 
 def _load_model(lang: str):
