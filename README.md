@@ -6,7 +6,7 @@
 Kaihou Engine is a translation engine that combines linguistic analysis, LLMs, terminologies, dictionaries, guides, and any additional resources you add, to deliver precise, context‑aware translations.
 
 ## Core Capabilities
-- Linguistic analysis (syntax, morphology, entities) via `kaihou-nlp-engine`.
+- Linguistic analysis (syntax, morphology, entities) via the internal `kaihou_engine.nlp_engine` implementation.
 - Terminology and glossary enforcement.
 - Validation of numbers, entities, terminology, and semantic similarity.
 - Self‑correcting loop: failing drafts are sent back to the LLM for revision.
@@ -43,21 +43,19 @@ Validation (numbers, entities, terminology, semantic similarity)
 ```
 .
 ├─ .github/                # CI & publishing workflows
-├─ config/
+├─ config/                 # YAML config for models, pipeline, glossary, plugins
 │   ├─ models.yaml
 │   ├─ pipeline.yaml
 │   ├─ glossaries/
 │   └─ plugins.yaml
-├─ libs/
-├─ src/
-├─ tests/
-├─ kaihou-nlp-engine/       # git submodule
+├─ src/                    # Python package source
+│   └─ kaihou_engine/
+│       └─ nlp_engine/      # internal NLP implementation
+├─ tests/                  # test suite
 ├─ pyproject.toml
 ├─ README.md
-├─ install.sh
-├─ setup.sh
-├─ uninstall.sh
-├─ requirements.txt
+├─ install.sh               # one‑shot installer (creates .venv, installs deps, spaCy models)
+├─ requirements.txt          # placeholder – runtime deps are in pyproject.toml
 ├─ kaihou_spec.md
 ├─ LICENSE
 ```
@@ -65,11 +63,18 @@ Validation (numbers, entities, terminology, semantic similarity)
 
 ## Installation
 ```bash
+# Clone the repository
 git clone https://github.com/kaihouproject/kaihou-engine.git
 cd kaihou-engine
-git submodule update --init   # fetch kaihou-nlp-engine
-pip install -e ".[dev]"
+
+# Run the one‑shot installer (creates .venv, installs the package and spaCy models)
+./install.sh
+
+# Activate the virtual environment
+source .venv/bin/activate
 ```
+
+The installer automatically initializes any submodules (none are required now) and installs the required spaCy language models (`en`, `fr`, `es`).
 
 ## Quick Start
 ```bash
