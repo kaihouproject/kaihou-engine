@@ -1,73 +1,58 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ---------- Funciones auxiliares ----------
-prompt() {
-    local msg="$1"
-    local default="$2"
-    read -rp "$msg [$default]: " answer
-    echo "${answer:-$default}"
-}
+# One‑shot installer for Kaihou Engine
+# Steps:
+# 1. Prepare virtualenv
+# 2. Activate and install package (editable) from pyproject.toml
+# 3. Initialize submodules
+# 4. Install spaCy language models (en, fr, es)
+# 5. Completion message
 
-add_alias() {
-    local rc_file="$1"
-    local alias_cmd="alias nlp='python -m nlp_engine.cli'"
-    # No duplicar líneas
-    grep -qxF "$alias_cmd" "$rc_file" 2>/dev/null || echo "$alias_cmd" >> "$rc_file"
-    echo "✅ Alias añadido a $rc_file"
-}
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_DIR="$REPO_DIR/.venv"
 
-# ---------- 1️⃣ Elegir carpeta de instalación ----------
-echo "=== Instalador del NLP Engine ==="
-INSTALL_DIR=$(prompt "Directorio donde instalar (ruta absoluta)" "$HOME/kaihou-nlp-engine")
-mkdir -p "$INSTALL_DIR"
-echo "📁 Carpeta de instalación: $INSTALL_DIR"
+echo -e "\n👣 Step 1/5: Preparing virtual environment"
+mkdir -p "$VENV_DIR"
 
-# ---------- 2️⃣ Copiar código ----------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cp -r "$SCRIPT_DIR"/nlp_engine "$INSTALL_DIR"/
-cp "$SCRIPT_DIR"/requirements.txt "$INSTALL_DIR"/
-# Si tienes setup.py o pyproject.toml, descomenta la siguiente línea:
-# cp "$SCRIPT_DIR"/setup.py "$INSTALL_DIR"/ 2>/dev/null || true
+if [ -d "$VENV_DIR" ]; then
+  echo "✅ Virtual environment already exists"
+else
+  echo -e "\n🐍 Creating virtual environment"
+  python3 -m venv "$VENV_DIR"
+fi
 
-# ---------- 3️⃣ Crear virtual‑env ----------
-cd "$INSTALL_DIR"
-python3 -m venv .venv
-source .venv/bin/activate
+echo -e "\n🔧 Step 2/5: Activating and installing package"
+source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install -e "$REPO_DIR"
 
-# ---------- 4️⃣ Preguntar idiomas ----------
-echo "🔤 Selecciona los idiomas que deseas instalar (separados por espacio):"
-echo "   es  en  fr  de  (puedes añadir más si los defines en el código)"
-read -rp "Idiomas > " LANGS
-LANGS=$(echo "$LANGS" | tr '[:upper:]' '[:lower:]' | tr -s ' ' '\n' | sort -u | tr '\n' ' ')
+# Initialize submodules if any
+if git rev-parse --git-dir > /dev/null 2>&1; then
+  echo -e "\n🔧 Step 3/5: Initializing submodules"
+  git submodule update --init --recursive
+fi
 
-declare -A MODEL_MAP=(
-    [es]="es_core_news_sm"
-    [en]="en_core_web_sm"
-    [fr]="fr_core_news_sm"
-    [de]="de_core_news_sm"
+# Install spaCy models
+declare -A MODELS=(
+  [en]="en_core_web_sm"
+  [fr]="fr_core_news_sm"
+  [es]="es_core_news_sm"
 )
 
-for L in $LANGS; do
-    if [[ -v MODEL_MAP[$L] ]]; then
-        echo "📦 Descargando modelo spaCy para $L ..."
-        python -m spacy download "${MODEL_MAP[$L]}"
-    else
-        echo "⚠️  No hay modelo predefinido para '$L'. Se omite."
-    fi
+echo -e "\n🧠 Step 4/5: Installing spaCy models"
+for LANG in "${!MODELS[@]}"; do
+  MODEL="${MODELS[$LANG]}"
+  if python - <<'PY'
+import importlib.util, sys
+sys.exit(0 if importlib.util.find_spec('$MODEL') else 1)
+PY
+  ; then
+    echo "✅ Model $MODEL already installed"
+  else
+    echo "📥 Downloading model $MODEL..."
+    python -m spacy download "$MODEL"
+  fi
 done
 
-# ---------- 5️⃣ Alias ----------
-if [[ -n "${ZSH_VERSION-}" ]]; then
-    RC_FILE="$HOME/.zshrc"
-else
-    RC_FILE="$HOME/.bashrc"
-fi
-add_alias "$RC_FILE"
-
-# ---------- 6️⃣ Mensaje final ----------
-echo -e "\n✅ Instalación completada."
-echo "Ejecuta: nlp <comando>"
-echo "Si el alias no funciona ahora, abre una nueva terminal o ejecuta: source $RC_FILE"
+echo -e "\n✅ Installation complete. Activate the environment with: source $VENV_DIR/bin/activate"

@@ -1,3 +1,3 @@
-spacy>=3.7
-click>=8.1
-rich>=13.0
+# requirements.txt is intentionally minimal – runtime dependencies are declared in pyproject.toml.
+# For reference, you may list optional extras here if needed.
+
