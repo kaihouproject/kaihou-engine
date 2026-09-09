@@ -97,6 +97,16 @@ We welcome contributions. Open a pull request (forking is optional) and referenc
 - Additional language pairs (e.g., ES, DE)
 - Plug‑in for remote LLM APIs
 
+## Acknowledgements
+
+The Kaihou Engine stands on the shoulders of many great open‑source projects and the broader Python community:
+
+- **[spaCy](https://spacy.io/)** – the NLP library that provides the linguistic backbone.
+- **[Rich](https://github.com/Textualize/rich)** – beautiful terminal rendering and colorised output.
+- **[Click](https://palletsprojects.com/p/click/)** – the CLI framework that powers our command line.
+- **[Python](https://www.python.org/)** – for its extensive ecosystem and thriving community.
+- And countless **contributors** who have helped improve Kaihou Engine.
+
 These items are tracked in the GitHub milestone **Future Features**.
 
 [![CI](https://github.com/kaihouproject/kaihou-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/kaihouproject/kaihou-engine/actions/workflows/ci.yml)
