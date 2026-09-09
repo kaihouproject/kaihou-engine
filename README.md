@@ -1,5 +1,8 @@
 # Kaihou Engine – Precise Translation
 
+![Version 0.2.0](https://img.shields.io/badge/version-0.2.0-blue)
+*One‑shot installer added, Spanish model support, live debug logs*
+
 Kaihou Engine is a translation engine that combines linguistic analysis, LLMs, terminologies, dictionaries, guides, and any additional resources you add, to deliver precise, context‑aware translations.
 
 ## Core Capabilities
@@ -38,29 +41,34 @@ Validation (numbers, entities, terminology, semantic similarity)
 ## Repository Layout
 
 ```
-kaihou-engine/
-├─ .github/                # CI \u0026 publishing workflows
+.
+├─ .github/                # CI & publishing workflows
 ├─ config/
-│   ├─ models.yaml          # LLM profiles (connector, strengths, etc.)
-│   ├─ pipeline.yaml        # Order of steps, thresholds, adaptive‑mode rules
-│   ├─ glossaries/          # Domain‑specific term glossaries (YAML)
-│   └─ plugins.yaml         # List of enabled plugins (by module path)
-├─ src/kaihou_engine/
-│   ├─ __init__.py
-│   ├─ orchestrator.py      # CLI entry point (`kaihou` console script)
-│   ├─ core/                # Pipeline runner, schemas, exceptions
-│   └─ plugins/             # LLM connectors, terminologists, validators, etc.
-├─ .gitignore
+│   ├─ models.yaml
+│   ├─ pipeline.yaml
+│   ├─ glossaries/
+│   └─ plugins.yaml
+├─ libs/
+├─ src/
+├─ tests/
+├─ kaihou-nlp-engine/       # git submodule
 ├─ pyproject.toml
-└─ README.md                # (this file)
+├─ README.md
+├─ install.sh
+├─ setup.sh
+├─ uninstall.sh
+├─ requirements.txt
+├─ kaihou_spec.md
+├─ LICENSE
 ```
+
 
 ## Installation
 ```bash
-git clone https://github.com/houtarou-d/kaihou-engine.git
+git clone https://github.com/kaihouproject/kaihou-engine.git
 cd kaihou-engine
 git submodule update --init   # fetch kaihou-nlp-engine
-pip install -e ./kaihou-engine[dev]
+pip install -e ".[dev]"
 ```
 
 ## Quick Start
@@ -86,7 +94,7 @@ We welcome contributions. Open a pull request (forking is optional) and referenc
 
 These items are tracked in the GitHub milestone **Future Features**.
 
-[![CI](https://github.com/houtarou-d/kaihou-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/houtarou-d/kaihou-engine/actions/workflows/ci.yml)
+[![CI](https://github.com/kaihouproject/kaihou-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/kaihouproject/kaihou-engine/actions/workflows/ci.yml)
 
 ## License
 MIT License
