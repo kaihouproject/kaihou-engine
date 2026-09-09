@@ -62,39 +62,6 @@ Validation (numbers, entities, terminology, semantic similarity)
 
 
 ## Installation
-
-## Alternative Distribution Methods
-
-You can install *Kaihou Engine* without publishing to PyPI using any of the following approaches:
-
-### 1. Direct install from GitHub (editable)
-```bash
-# Clone the repository (or just point pip to the URL)
-python -m pip install -e git+https://github.com/kaihouproject/kaihou-engine.git@main#egg=kaihou-engine
-```
-This installs the package in editable mode, so you can modify the source and the changes are reflected immediately.
-
-### 2. Install from a GitHub Release (wheel)
-1. Create a release on GitHub (e.g., `v0.2.0`). The CI workflow will build a wheel and attach it as an asset.
-2. Download the wheel asset and install it locally:
-```bash
-curl -L -o kaihou_engine-0.2.0-py3-none-any.whl \
-    https://github.com/kaihouproject/kaihou-engine/releases/download/v0.2.0/kaihou_engine-0.2.0-py3-none-any.whl
-python -m pip install kaihou_engine-0.2.0-py3-none-any.whl
-```
-
-### 3. Install from GitHub Packages (private or public registry)
-If you enable GitHub Packages for the repository, you can publish the wheel there and install it with:
-```bash
-python -m pip install \
-    --extra-index-url https://npm.pkg.github.com/kaihouproject \
-    kaihou-engine
-```
-You will need a personal access token with the `read:packages` scope stored in `~/.pypirc` or passed via environment variables.
-
-These alternatives let you distribute the engine without needing an account on PyPI.
-
-## Installation
 ```bash
 # Clone the repository
 git clone https://github.com/kaihouproject/kaihou-engine.git
