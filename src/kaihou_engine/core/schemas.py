@@ -43,7 +43,7 @@ class SourceAnalysis(BaseModel):
     tokens: List[Token]
     entities: List[NamedEntity]
     sentences: List[str]
-    register: Optional[str] = None
+    register_type: Optional[str] = Field(default=None, alias="register")
     tone: Optional[str] = None
     domain: Optional[str] = None
 

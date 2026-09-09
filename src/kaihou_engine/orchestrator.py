@@ -66,6 +66,10 @@ def _interactive_loop() -> None:
         as_json = click.confirm("Show full JSON output?", default=False)
         debug = click.confirm("Show debug info?", default=False)
 
+        # Run pipeline with optional debug logging
+        if debug:
+            rprint("[bold yellow]Starting translation pipeline...[/bold yellow]")
+            rprint("[bold]Step 1:[/bold] Preparing input text")
         try:
             result, _ = run_translation_pipeline(
                 source_text=source_text,
@@ -77,8 +81,25 @@ def _interactive_loop() -> None:
             rprint(f"[bold red]Pipeline error:[/bold red] {exc}")
             continue
 
-        if as_json or debug:
-            click.echo(json.dumps(result, ensure_ascii=False, indent=2))
+        if as_json:
+            # Strip debug info for pure JSON output unless debug flag is also set.
+            output = result.copy()
+            if not debug:
+                output.pop("debug", None)
+            click.echo(json.dumps(output, ensure_ascii=False, indent=2))
+        elif debug:
+            # Show human‑readable output plus debug info.
+            rprint("[bold green]Translation result:[/bold green]")
+            rprint(result.get("translation", ""))
+            rprint("\n[bold cyan]Validation summary:[/bold cyan]")
+            validation = result.get("validation", {})
+            passed = validation.get("passed", False)
+            rprint(f"Passed: {'✅' if passed else '❌'}")
+            if not passed:
+                for issue in validation.get("issues", []):
+                    rprint(f"- {issue.get('type')}: {issue.get('detail')} ({issue.get('severity')})")
+            rprint("\n[bold magenta]Debug info:[/bold magenta]")
+            rprint(json.dumps(result.get("debug", {}), ensure_ascii=False, indent=2))
         else:
             rprint("[bold green]Translation result:[/bold green]")
             rprint(result.get("translation", ""))
@@ -89,9 +110,6 @@ def _interactive_loop() -> None:
             if not passed:
                 for issue in validation.get("issues", []):
                     rprint(f"- {issue.get('type')}: {issue.get('detail')} ({issue.get('severity')})")
-            if debug:
-                rprint("\n[bold magenta]Debug info:[/bold magenta]")
-                rprint(json.dumps(result.get("debug", {}), ensure_ascii=False, indent=2))
 
 
 
@@ -143,6 +161,9 @@ def translate(
     else:
         source_text = text_input  # type: ignore[arg-type]
 
+    if debug:
+        rprint("[bold yellow]Starting translation pipeline...[/bold yellow]")
+        rprint("[bold]Step 1:[/bold] Preparing input text")
     try:
         result, _ = run_translation_pipeline(
             source_text=source_text,
@@ -154,8 +175,24 @@ def translate(
         rprint(f"[bold red]Pipeline error:[/bold red] {exc}")
         raise click.Abort()
 
-    if as_json or debug:
-        click.echo(json.dumps(result, ensure_ascii=False, indent=2))
+    if as_json:
+        # Strip debug unless explicitly requested.
+        output = result.copy()
+        if not debug:
+            output.pop("debug", None)
+        click.echo(json.dumps(output, ensure_ascii=False, indent=2))
+    elif debug:
+        rprint("[bold green]Translation result:[/bold green]")
+        rprint(result.get("translation", ""))
+        rprint("\n[bold cyan]Validation summary:[/bold cyan]")
+        validation = result.get("validation", {})
+        passed = validation.get("passed", False)
+        rprint(f"Passed: {'✅' if passed else '❌'}")
+        if not passed:
+            for issue in validation.get("issues", []):
+                rprint(f"- {issue.get('type')}: {issue.get('detail')} ({issue.get('severity')})")
+        rprint("\n[bold magenta]Debug info:[/bold magenta]")
+        rprint(json.dumps(result.get("debug", {}), ensure_ascii=False, indent=2))
     else:
         rprint("[bold green]Translation result:[/bold green]")
         rprint(result.get("translation", ""))
@@ -166,9 +203,6 @@ def translate(
         if not passed:
             for issue in validation.get("issues", []):
                 rprint(f"- {issue.get('type')}: {issue.get('detail')} ({issue.get('severity')})")
-        if debug:
-            rprint("\n[bold magenta]Debug info:[/bold magenta]")
-            rprint(json.dumps(result.get("debug", {}), ensure_ascii=False, indent=2))
 
 
 

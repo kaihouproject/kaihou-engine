@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-import click
+from ..core.exceptions import PipelineError
 from pydantic import ValidationError
 
 from ..core.schemas import SourceAnalysis, TranslationRequest, LLMDraft, ValidationReport, TerminologyContext
@@ -29,61 +29,13 @@ from ..plugins.plugin_registry import load_plugins
 # ---------------------------------------------------------------------------
 
 def _run_nlp_engine(input_text: str, lang: str) -> SourceAnalysis:
-    """Execute ``nlp_engine.cli`` as a subprocess and parse its ``--json`` output.
-
-    ``input_text`` is passed via ``--input -`` (stdin) because the CLI expects a
-    file path; we therefore create a temporary file.
+    """Run the internal NLP analyzer (``nlp_engine.analyzer.analyze``) and return a ``SourceAnalysis`` model.
     """
-    # Write temporary input file
-    tmp_path = Path.cwd() / ".tmp_input.txt"
-    tmp_path.write_text(input_text, encoding="utf-8")
-    cmd = [
-        "python",
-        "-m",
-        "nlp_engine.cli",
-        "analyze",
-        str(tmp_path),
-        "-l",
-        lang,
-        "--json",
-    ]
     try:
-        completed = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        from kaihou_engine.nlp_engine.analyzer import analyze as nlp_analyze
+        return nlp_analyze(input_text, lang)
     except Exception as exc:
-        # Fallback stub if external nlp engine unavailable
-        from .schemas import SourceAnalysis, Token
-        stub_token = Token(
-            text="",
-            lemma="",
-            pos="",
-            tag="",
-            morph={},
-            dep="",
-            head_index=0,
-            index=0,
-        )
-        return SourceAnalysis(
-            raw_text=input_text,
-            language=lang,
-            tokens=[stub_token],
-            entities=[],
-            sentences=[input_text],
-        )
-    finally:
-        # Clean up temporary file regardless of success/failure
-        try:
-            tmp_path.unlink()
-        except Exception:
-            pass
-    try:
-        return SourceAnalysis.model_validate_json(completed.stdout)
-    except ValidationError as exc:
-        raise PipelineError(f"Invalid JSON from nlp engine: {exc}") from exc
+        raise PipelineError(f"Failed to run internal NLP analyzer: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -115,14 +67,14 @@ def run_translation_pipeline(
     # 3️⃣ NLP analysis (source)
     source_analysis = _run_nlp_engine(source_text, source_lang)
 
-    # 4️⃣ Terminology context – use the glossary_substitutor plugin as a query
-    #    placeholder (it actually performs substitution after translation).
-    glossary_plugin = plugins.get("kaihou_engine.plugins.glossary_substitutor")
-    terminology_context = glossary_plugin.process({}) if glossary_plugin else {"terminology_hits": [], "dictionary_entries": []}
-    # Convert the plain dict into the expected ``TerminologyContext`` model lazily.
-    from ..core.schemas import TerminologyContext
-
-    terminology = TerminologyContext.model_validate(terminology_context)
+    # 4️⃣ Terminology context – use the GlossaryPlugin (if present) to provide terminology data.
+    glossary_plugin = plugins.get("kaihou_engine.plugins.terminology.glossary_plugin.GlossaryPlugin")
+    if glossary_plugin:
+        terminology_context = glossary_plugin.query(source_analysis, None)
+    else:
+        terminology_context = TerminologyContext(terminology_hits=[], dictionary_entries=[], cultural_notes=[], regional_variant=None)
+    # Convert to the expected ``TerminologyContext`` model (already a model if from plugin).
+    terminology = terminology_context if isinstance(terminology_context, TerminologyContext) else TerminologyContext.model_validate(terminology_context)
 
     # 5️⃣ Build the translation request model
     request = TranslationRequest(
@@ -193,10 +145,7 @@ def run_translation_pipeline(
     }
 
 
-    # 9️⃣ Apply glossary substitution after translation (if plugin exists).
-    if glossary_plugin:
-        processed = glossary_plugin.process({"translation": final_translation}, target_language=target_lang)
-        output["translation"] = processed.get("translation", output["translation"])  # type: ignore
+    # No glossary substitution step (handled by TerminologyPlugin if needed).
 
     # 🔟 Validation – run each validator plugin and collect reports.
     validation_reports: List[ValidationReport] = []

@@ -20,8 +20,16 @@ from ...core.schemas import ValidationIssue, ValidationReport, SourceAnalysis, T
 
 class SemanticValidator(ValidatorPlugin):
     def __init__(self, *, model_name: str = "paraphrase-multilingual-MiniLM-L12-v2", threshold: float = 0.80) -> None:
-        self.model = SentenceTransformer(model_name)
+        self._model_name = model_name
         self.threshold = threshold
+        self._model: SentenceTransformer | None = None
+
+    @property
+    def model(self) -> SentenceTransformer:
+        """Load the SentenceTransformer model lazily on first use."""
+        if self._model is None:
+            self._model = SentenceTransformer(self._model_name)
+        return self._model
 
     def _embed(self, text: str) -> np.ndarray:
         # Convert to 1‑D torch tensor, then to numpy for cosine.
